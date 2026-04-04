@@ -5,626 +5,212 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#0C0A15">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="AkyVoy Repartidor - Entregas de comida">
-<title>AkyVoy - Repartidor</title>
-<link rel="manifest" id="pwa-manifest">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2310B981' width='100' height='100' rx='20'/><circle cx='50' cy='50' r='22' fill='white' opacity='.9'/><path d='M38 55l3-8h6l2 4h6l-2-4h3l4 8' fill='none' stroke='%2310B981' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/><circle cx='40' cy='57' r='4' fill='none' stroke='%2310B981' stroke-width='2.5'/><circle cx='60' cy='57' r='4' fill='none' stroke='%2310B981' stroke-width='2.5'/></svg>">
+<title>AkyVoy Repartidor</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--p:#7C3AED;--pd:#5B21B6;--pdd:#4C1D95;--pl:#A78BFA;--pll:#C4B5FD;--pb:#EDE9FE;--a:#F59E0B;--al:#FCD34D;--bg:#0C0A15;--bg2:#13101F;--cd:#1A1625;--ch:#231E33;--tx:#F8F7FF;--tx2:#A5A0B8;--tx3:#6B6580;--ok:#10B981;--no:#EF4444;--wn:#F59E0B;--bd:#2A2540}
+:root{--p:#7C3AED;--pd:#5B21B6;--pl:#A78BFA;--a:#F59E0B;--bg:#0C0A15;--bg2:#13101F;--cd:#1A1625;--ch:#231E33;--tx:#F8F7FF;--tx2:#A5A0B8;--tx3:#6B6580;--ok:#10B981;--no:#EF4444;--wn:#F59E0B;--bd:#2A2540}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:var(--tx);overflow-x:hidden;min-height:100vh;min-height:100dvh}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--pd);border-radius:3px}
+body{background:var(--bg);color:var(--tx);overflow-x:hidden;min-height:100vh}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--pd);border-radius:2px}
 input,textarea,select,button{font-family:inherit}
-@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes bounceIn{0%{transform:scale(0)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
-@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes toastOut{from{transform:translateX(0);opacity:1}to{transform:translateX(110%);opacity:0}}
-@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(25px,-15px) scale(1.1)}66%{transform:translate(-15px,10px) scale(.9)}}
-@keyframes pulse2{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}70%{box-shadow:0 0 0 12px rgba(16,185,129,0)}}
-@keyframes motorMove{0%{transform:translateX(-2px) rotate(-1deg)}25%{transform:translateX(2px) rotate(1deg)}50%{transform:translateX(-1px) rotate(0)}75%{transform:translateX(1px) rotate(-.5deg)}100%{transform:translateX(-2px) rotate(-1deg)}}
-@keyframes ripple{0%{transform:scale(1);opacity:.4}100%{transform:scale(2.5);opacity:0}}
-@keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.aUp{animation:slideUp .45s ease-out both}.aFi{animation:fadeIn .35s ease-out both}.aBi{animation:bounceIn .4s ease-out both}
-.d1{animation-delay:.06s}.d2{animation-delay:.12s}.d3{animation-delay:.18s}.d4{animation-delay:.24s}.d5{animation-delay:.3s}
-.btnP{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;border:none;padding:10px 20px;border-radius:11px;font-weight:600;cursor:pointer;transition:all .2s;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
-.btnP:active{transform:scale(.97)}
-.btnS{background:var(--cd);color:var(--tx);border:1px solid var(--bd);padding:9px 16px;border-radius:11px;font-weight:500;cursor:pointer;transition:all .2s;font-size:13px}
-.btnS:active{transform:scale(.97)}
-.btnOk{background:linear-gradient(135deg,var(--ok),#059669);color:#fff;border:none;padding:10px 20px;border-radius:11px;font-weight:700;cursor:pointer;transition:all .2s;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
-.btnOk:active{transform:scale(.97)}.btnOk:hover{box-shadow:0 6px 20px rgba(16,185,129,.3)}
-.btnNo{background:transparent;color:var(--no);border:1px solid var(--no);padding:9px 16px;border-radius:11px;font-weight:600;cursor:pointer;transition:all .2s;font-size:13px}
-.btnNo:active{transform:scale(.97)}
-.btnI{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--cd);border:1px solid var(--bd);color:var(--tx);cursor:pointer;transition:all .15s;flex-shrink:0}
-.btnI:active{transform:scale(.92)}
-.inp{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 13px;color:var(--tx);font-size:13px;outline:none;transition:border .2s}
+@keyframes sU{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes fI{from{opacity:0}to{opacity:1}}
+@keyframes tI{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tO{from{opacity:1}to{opacity:0;transform:translateX(110%)}}
+@keyframes oF{0%,100%{transform:translate(0,0)}50%{transform:translate(25px,-15px)}}
+@keyframes mM{0%{transform:translateX(-1px) rotate(-.5deg)}50%{transform:translateX(1px) rotate(.5deg)}100%{transform:translateX(-1px) rotate(-.5deg)}}
+@keyframes pG{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}}
+.aU{animation:sU .35s ease-out both}.fI{animation:fI .25s ease-out both}
+.d1{animation-delay:.05s}.d2{animation-delay:.1s}.d3{animation-delay:.15s}.d4{animation-delay:.2s}
+.bP{background:linear-gradient(135deg,var(--ok),#059669);color:#fff;border:none;padding:9px 16px;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.bP:active{transform:scale(.97)}
+.bS{background:var(--cd);color:var(--tx);border:1px solid var(--bd);padding:8px 14px;border-radius:10px;font-weight:500;cursor:pointer;font-size:12px}
+.bS:active{transform:scale(.97)}
+.bNo{background:transparent;color:var(--no);border:1px solid var(--no);padding:8px 14px;border-radius:10px;font-weight:600;cursor:pointer;font-size:12px}
+.bNo:active{transform:scale(.97)}
+.bA{background:linear-gradient(135deg,var(--a),#D97706);color:#000;border:none;padding:9px 16px;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px}
+.bA:active{transform:scale(.97)}
+.bI{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--cd);border:1px solid var(--bd);color:var(--tx);cursor:pointer;flex-shrink:0}
+.bI:active{transform:scale(.92)}
+.inp{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:9px;padding:9px 12px;color:var(--tx);font-size:13px;outline:none}
 .inp:focus{border-color:var(--ok);box-shadow:0 0 0 3px rgba(16,185,129,.1)}
 .inp::placeholder{color:var(--tx3)}
-.gc{background:rgba(26,22,37,.75);backdrop-filter:blur(10px);border:1px solid var(--bd);border-radius:15px;transition:all .25s;overflow:hidden}
-.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:16px;font-size:11px;font-weight:600;gap:3px}
+.gc{background:rgba(26,22,37,.75);backdrop-filter:blur(10px);border:1px solid var(--bd);border-radius:14px;overflow:hidden}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:12px;font-size:10px;font-weight:600;gap:3px}
 .bOk{background:rgba(16,185,129,.13);color:var(--ok)}.bWn{background:rgba(245,158,11,.13);color:var(--wn)}.bNo{background:rgba(239,68,68,.13);color:var(--no)}.bPr{background:rgba(124,58,237,.13);color:var(--pl)}
-#toasts{position:fixed;top:16px;left:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{pointer-events:auto;background:var(--cd);border:1px solid var(--bd);border-radius:13px;padding:12px 14px;display:flex;align-items:center;gap:10px;animation:toastIn .35s ease-out;box-shadow:0 8px 25px rgba(0,0,0,.45)}
-.toast.out{animation:toastOut .25s ease-in forwards}
-.toastI{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
-.toastB{flex:1;min-width:0}.toastT{font-weight:600;font-size:12px}.toastM{font-size:11px;color:var(--tx2);margin-top:1px}
-.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(12,10,21,.94);backdrop-filter:blur(18px);border-top:1px solid var(--bd);display:flex;justify-content:space-around;padding:6px 0 max(6px,env(safe-area-inset-bottom));z-index:100}
-.ni{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--tx3);transition:color .15s;font-size:10px;padding:3px 10px;-webkit-user-select:none;user-select:none}
-.ni.on{color:var(--ok)}.ni i{font-size:18px}
-.moOv{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(3px);z-index:500;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
-.moCt{background:var(--cd);border:1px solid var(--bd);border-radius:20px 20px 0 0;padding:22px;width:100%;max-width:480px;max-height:85dvh;overflow-y:auto;animation:slideUp .3s ease-out}
-.pbar{height:5px;background:var(--bg);border-radius:3px;overflow:hidden}.pfill{height:100%;border-radius:3px;transition:width .4s ease}
-.loginOrb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.35;animation:orbFloat 7s ease-in-out infinite}
-.newPulse{animation:pulse2 1.5s infinite}
-.motoMk{animation:motorMove .5s ease-in-out infinite}
-.onlineDot{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse2 1.5s infinite;display:inline-block}
-.earnCard{position:relative;overflow:hidden}.earnCard::after{content:'';position:absolute;top:-50%;right:-50%;width:100px;height:100px;border-radius:50%;background:rgba(16,185,129,.06);pointer-events:none}
+#toasts{position:fixed;top:14px;left:14px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{pointer-events:auto;background:var(--cd);border:1px solid var(--bd);border-radius:11px;padding:10px 12px;display:flex;align-items:center;gap:8px;animation:tI .3s ease-out;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.toast.out{animation:tO .2s ease-in forwards}
+.tI{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
+.tB{flex:1;min-width:0}.tT{font-weight:600;font-size:11px}.tM{font-size:10px;color:var(--tx2);margin-top:1px}
+.bn{position:fixed;bottom:0;left:0;right:0;background:rgba(12,10,21,.95);backdrop-filter:blur(18px);border-top:1px solid var(--bd);display:flex;justify-content:space-around;z-index:100;padding:5px 0;padding-bottom:calc(5px + env(safe-area-inset-bottom,5px))}
+.ni{display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;color:var(--tx3);font-size:9px;padding:4px 8px;-webkit-user-select:none;user-select:none;transition:color .15s;min-width:52px}
+.ni.on{color:var(--ok)}.ni i{font-size:17px;margin-bottom:1px}
+.moO{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:500;display:flex;align-items:center;justify-content:center;animation:fI .2s}
+.moC{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:18px;width:100%;max-width:460px;max-height:80dvh;overflow-y:auto;animation:sU .25s ease-out}
+.pbar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden}.pfill{height:100%;border-radius:2px;transition:width .4s ease}
+.lo{position:absolute;border-radius:50%;filter:blur(60px);opacity:.25;animation:oF 7s ease-in-out infinite}
+.page{padding-bottom:calc(64px + env(safe-area-inset-bottom,5px))}
+.motoMk{animation:mM .4s ease-in-out infinite}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot-ok{background:var(--ok)}.dot-wn{background:var(--wn)}.dot-no{background:var(--no)}.dot-off{background:var(--tx3)}
 </style>
 </head>
 <body>
 
-<!-- ========== LOGIN ========== -->
-<div id="pg-login" style="min-height:100dvh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
-  <div class="loginOrb" style="width:260px;height:260px;background:var(--ok);top:-40px;left:-40px"></div>
-  <div class="loginOrb" style="width:200px;height:200px;background:#059669;bottom:-30px;right:-30px;animation-delay:2s"></div>
-  <div class="loginOrb" style="width:140px;height:140px;background:var(--p);top:35%;right:8%;animation-delay:3.5s;opacity:.15"></div>
-  <div class="gc aUp" style="padding:32px 28px;width:380px;max-width:92vw;position:relative;z-index:2">
-    <div class="flex justify-center mb-5">
-      <svg viewBox="0 0 220 70" width="180" height="58">
-        <defs><linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#10B981"/></linearGradient></defs>
-        <path d="M28 8C28 8,12 22,12 33C12 42,19 49,28 49C37 49,44 42,44 33C44 22,28 8,28 8Z" fill="url(#g1)"/>
-        <circle cx="28" cy="31" r="6" fill="#0C0A15" opacity=".3"/>
-        <path d="M22 34l2-5h4l1.5 2.5h4l-1.5-2.5h2l3 5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="23.5" cy="35.5" r="2" fill="none" stroke="#fff" stroke-width="1.2"/>
-        <circle cx="33" cy="35.5" r="2" fill="none" stroke="#fff" stroke-width="1.2"/>
-        <text x="72" y="42" font-family="Outfit" font-weight="900" font-size="28" fill="#F8F7FF">Aky</text>
-        <text x="114" y="42" font-family="Outfit" font-weight="900" font-size="28" fill="url(#g1)">Voy</text>
-        <text x="72" y="54" font-family="Outfit" font-weight="300" font-size="9" fill="#34D399" letter-spacing="3.5">REPARTIDOR</text>
-      </svg>
+<div id="pgL" style="min-height:100dvh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">
+  <div class="lo" style="width:220px;height:220px;background:var(--ok);top:-30px;left:-30px"></div>
+  <div class="lo" style="width:180px;height:180px;background:#34D399;bottom:-25px;right:-25px;animation-delay:2s"></div>
+  <div class="gc aU" style="padding:28px 24px;width:360px;max-width:92vw;position:relative;z-index:2">
+    <div style="text-align:center;margin-bottom:18px">
+      <svg viewBox="0 0 220 70" width="150" height="48"><defs><linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#10B981"/></linearGradient></defs><path d="M28 8C28 8,12 22,12 33C12 42,19 49,28 49C37 49,44 42,44 33C44 22,28 8,28 8Z" fill="url(#g1)"/><circle cx="28" cy="31" r="6" fill="#0C0A15" opacity=".3"/><path d="M22 34l2-5h4l1 2h4l-1-2h2l3 5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="23.5" cy="36" r="2.5" fill="none" stroke="#fff" stroke-width="1.5"/><circle cx="33.5" cy="36" r="2.5" fill="none" stroke="#fff" stroke-width="1.5"/></svg>
+      <h2 style="font-size:17px;font-weight:700;margin-top:10px">Portal de Repartidor</h2>
+      <p style="font-size:11px;color:var(--tx2)">Solo acceso con aprobación previa</p>
     </div>
-    <h2 class="text-center text-lg font-bold mb-1">Portal de Repartidor</h2>
-    <p class="text-center text-xs mb-5" style="color:var(--tx2)">Solo acceso con aprobación previa</p>
-    <div class="mb-3"><label class="text-xs font-medium mb-1 block" style="color:var(--tx2)">ID de repartidor</label><input id="lId" class="inp" placeholder="Ej: REP-0042"></div>
-    <div class="mb-4"><label class="text-xs font-medium mb-1 block" style="color:var(--tx2)">Contraseña</label><input id="lPass" type="password" class="inp" placeholder="Tu contraseña"></div>
-    <button onclick="doLogin()" class="btnOk w-full mb-2"><i class="fas fa-arrow-right-to-bracket"></i>Ingresar</button>
-    <div class="mt-4 pt-3 border-t text-center" style="border-color:var(--bd)">
-      <p class="text-xs" style="color:var(--tx3)">Quieres ser repartidor? <span class="font-semibold cursor-pointer" style="color:var(--ok)" onclick="showToast('Solicitud','Contacta a servicio técnico de AkyVoy para aplicar','info')">Solicitar acceso</span></p>
-    </div>
+    <div style="margin-bottom:8px"><input class="inp" id="lI" placeholder="ID de repartidor"></div>
+    <div style="margin-bottom:14px"><input class="inp" id="lP" type="password" placeholder="Contraseña"></div>
+    <button onclick="doLogin()" class="bP" style="width:100%;padding:12px"><i class="fas fa-arrow-right-to-bracket"></i>Ingresar</button>
+    <button onclick="qLogin()" class="bP" style="width:100%;padding:12px;margin-top:6px;background:linear-gradient(135deg,var(--ok),#059669);color:#fff"><i class="fas fa-bolt" style="margin-right:4px"></i>Entrar Directo (Demo)</button>
   </div>
 </div>
 
-<!-- ========== BLOQUEO SIN APROBACIÓN ========== -->
-<div id="pg-blocked" class="hidden" style="min-height:100dvh;display:flex;align-items:center;justify-content:center">
-  <div class="gc aUp text-center" style="padding:40px 28px;width:380px;max-width:92vw">
-    <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style="background:rgba(239,68,68,.13)"><i class="fas fa-ban text-2xl" style="color:var(--no)"></i></div>
-    <h2 class="text-lg font-bold mb-2">Acceso Denegado</h2>
-    <p class="text-sm mb-4" style="color:var(--tx2)" id="blockMsg">Tu cuenta no ha sido aprobada por servicio técnico. Espera la verificación.</p>
-    <button onclick="showToast('Info','La aprobación la realiza el administrador desde el panel de control','info')" class="btnS w-full"><i class="fas fa-info-circle mr-2"></i>Más Información</button>
-    <button onclick="logout()" class="btnS w-full mt-3 text-xs">Cerrar sesión</button>
-  </div>
-</div>
-
-<!-- ========== APP ========== -->
-<div id="pg-app" class="hidden" style="padding-bottom:68px">
-  <header class="sticky top-0 z-50 px-4 py-2.5 flex items-center justify-between" style="background:rgba(12,10,21,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd)">
-    <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,var(--ok),#059669)"><i class="fas fa-motorcycle text-sm" style="color:#fff"></i></div>
-      <div><div class="font-bold text-sm">Carlos Mendoza</div><div class="text-xs" style="color:var(--tx3)">REP-0042</div></div>
-    </div>
-    <div class="flex items-center gap-2">
-      <button id="onlineBtn" onclick="toggleOnline()" class="badge bOk cursor-pointer text-xs"><span class="onlineDot"></span>En línea</button>
-    </div>
+<div id="pgA" style="display:none">
+  <header style="position:sticky;top:0;z-index:50;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;background:rgba(12,10,21,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd)">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--ok),#059669)"><i class="fas fa-motorcycle" style="color:#fff;font-size:12px"></i></div><div><div style="font-weight:700;font-size:13px">Carlos Mendoza</div><div style="font-size:10px;color:var(--tx3)">REP-0042</div></div>
+    <div style="width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pG 1.5s infinite"></div>
   </header>
-
-  <div id="t-available" class="tabC"></div>
-  <div id="t-active" class="tabC hidden"></div>
-  <div id="t-earnings" class="tabC hidden"></div>
-  <div id="t-profile" class="tabC hidden"></div>
-
-  <nav class="bnav">
-    <div class="ni on" onclick="goTab('available')"><i class="fas fa-list"></i><span>Disponibles</span></div>
-    <div class="ni" onclick="goTab('active')"><i class="fas fa-route"></i><span>En Curso</span></div>
-    <div class="ni" onclick="goTab('earnings')"><i class="fas fa-wallet"></i><span>Ganancias</span></div>
-    <div class="ni" onclick="goTab('profile')"><i class="fas fa-user-gear"></i><span>Perfil</span></div>
+  <div id="t-avail" class="page tC"></div>
+  <div id="t-act" class="page tC" style="display:none"></div>
+  <div id="t-earn" class="page tC" style="display:none"></div>
+  <div id="prof" class="page tC" style="display:none"></div>
+  <nav class="bn">
+    <div class="ni on" onclick="goT('avail')"><i class="fas fa-list"></i><span>Disponibles</span></div>
+    <div class="ni" onclick="goT('act')"><i class="fas fa-route"></i><span>En Curso</span></div>
+    <div class="ni" onclick="goT('earn')"><i class="fas fa-wallet"></i><span>Ganancias</span></div>
+    <div class="ni" onclick="goT('prof')"><i class="fas fa-user-gear"></i><span>Perfil</span></div>
   </nav>
 </div>
-
-<div id="toasts"></div>
-<div id="modal"></div>
+<div id="toasts"></div><div id="modal"></div>
 
 <script>
-/* ============================================================
-   AkyVoy REPARTIDOR - PWA Completa
-   ============================================================ */
-
-// PWA
-const manifest={name:"AkyVoy Repartidor",short_name:"AkyVoy Rep",description:"Entregas de comida",start_url:"./",display:"standalone",background_color:"#0C0A15",theme_color:"#10B981",orientation:"portrait",icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%230C0A15' width='192' height='192' rx='38'/><circle cx='96' cy='96' r='38' fill='%2310B981'/><path d='M76 102l6-14h12l4 7h12l-4-7h6l10 14' fill='none' stroke='white' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/><circle cx='80' cy='107' r='7' fill='none' stroke='white' stroke-width='4'/><circle cx='112' cy='107' r='7' fill='none' stroke='white' stroke-width='4'/></svg>",sizes:"192x192",type:"image/svg+xml"}]};
-document.getElementById('pwa-manifest').href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));
-
-// BroadcastChannel
-const BC=new BroadcastChannel('akyvoy_channel');
-BC.onmessage=function(e){
-  const d=e.data;if(!d||d.to!=='delivery')return;
-  switch(d.type){
-    case 'new_delivery':
-      addAvailableOrder(d);
-      break;
-    case 'order_ready_for_pickup':
-      showToast('Pedido Listo para Recoger',d.orderCode+' - '+d.restName,'ok');
-      break;
-    case 'proximity_check':
-      // El cliente pregunta si estamos cerca
-      if(S.activeDelivery&&S.activeDelivery.code===d.orderCode){
-        sendMsg('client','proximity_alert',{orderCode:d.orderCode});
-      }
-      break;
-  }
+var mf=function(a,f){for(var i=0;i<a.length;i++){if(f(a[i]))return a[i]}return null};
+var BC=new BroadcastChannel('akyvoy_channel');
+BC.onmessage=function(e){var d=e.data;if(!d||d.to!=='delivery')return;
+if(d.type==='new_delivery'){addDO(d);renderAvail();renderAct()}
+if(d.type==='proximity_check'){if(S.actD&&S.actD.code===d.orderCode)toast('Cerca del destino','Llegas en minutos','wn')}
 };
-function sendMsg(to,type,data={}){BC.postMessage({from:'delivery',to,type,...data})}
+function sm(t,d){BC.postMessage({from:'delivery',to:t,type:d})};
 
-// Estado
-const S={
-  user:null,
-  approved:true,
-  online:true,
-  commission:50.00,
-  balance:147.50,
-  activeDelivery:null,
-  available:loadD('aky_del_avail',getSampleOrders()),
-  earnings:loadD('aky_del_earnings',getSampleEarnings()),
-  completedToday:5,
-  rating:4.9,
-  driverType:'comisionable',
-  maps:{},
-  motorMarker:null,
-  trackingInterval:null,
-  motorPath:[],
-  motorIdx:0,
-  sentProximity:false,
-};
+var S={user:null,approved:true,online:true,commission:50,balance:147.50,activeDelivery:null,completedToday:5,rating:4.9,driverType:'comisionable',
+avail:ld('ak_d_av',[
+{code:'AK-1046',rest:'Sabor Criollo',restAddr:'Calle Principal #45',dist:'1.2 km',items:'Bandeja Paisa x2',total:90,tip:2,client:'María G.',clientAddr:'Calle 5 #12-30',coords:[4.660,-74.065]},
+{code:'AK-1047',rest:'Pizza Rex',restAddr:'Av. Industrial #120',dist:'2.8 km',items:'Pizza Pepperoni x1',total:65,tip:1.50,client:'Pedro L.',clientAddr:'Av. 3 #45-10',coords:[4.653,-74.055]},
+{code:'AK-1048',rest:'Burger House',restAddr:'Cra 15 #78-32',dist:'4.1 km',items:'Clásica Smash x3',total:96,tip:3,client:'Laura M.',clientAddr:'Cra 7 #88-20',coords:[4.658,-74.070]},
+{code:'AK-1049',rest:'Sushi Lover',restAddr:'CC Plaza #8',dist:'5.5 km',items:'Roll California x2',total:130,tip:4,client:'Diego R.',clientAddr:'Calle 12 #3-15',coords:[4.650,-74.062]},
+{code:'AK-1050',rest:'Jugo Express',restAddr:'Parque Central K-3',dist:'7.3 km',items:'Smoothie Mango x4',total:72,tip:2,client:'Sofía H.',clientAddr:'Diag 40 #5-8',coords:[4.655,-74.075]}
+]),
+earnings:ld('ak_d_earn',[{code:'AK-1042',earn:7.17,comm:0.17,time:'10:45',type:'fijo'},{code:'AK-1041',earn:6.26,comm:0.26,time:'10:20',type:'comisionable'},{code:'AK-1039',earn:5.70,comm:0.04,time:'09:55',type:'comisionable'},{code:'AK-1038',earn:3.30,comm:0.16,time:'09:30',type:'fijo'},{code:'AK-1037',earn:2.80,comm:0.06,time:'09:10',type:'comisionable'},{code:'AK-1036',earn:3.50,comm:0.30,time:'08:45',type:'fijo'},{code:'AK-1035',earn:2.66,comm:0.16,time:'08:20',type:'comisionable'}])};
 
-function loadD(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}}
-function saveD(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
-function getSampleOrders(){
-  return[
-    {code:'AK-1046',rest:'Sabor Criollo',restAddr:'Calle Principal #45',dist:'1.2 km',distM:1200,items:'Bandeja Paisa x2',total:17.00,tip:2.00,client:'María G.',clientAddr:'Calle 5 #12-30',coords:[4.660,-74.065]},
-    {code:'AK-1047',rest:'Pizza Rex',restAddr:'Av. Industrial #120',dist:'2.8 km',distM:2800,items:'Pizza Pepperoni x1',total:14.00,tip:1.50,client:'Pedro L.',clientAddr:'Av. 3 #45-10',coords:[4.653,-74.055]},
-    {code:'AK-1048',rest:'Burger House',restAddr:'Carrera 15 #78-32',dist:'4.1 km',distM:4100,items:'Clásica Smash x3',total:24.00,tip:3.00,client:'Laura M.',clientAddr:'Cra 7 #88-20',coords:[4.658,-74.070]},
-    {code:'AK-1049',rest:'Sushi Lover',restAddr:'Centro Comercial #8',dist:'5.5 km',distM:5500,items:'Roll California x2, Sashimi x1',total:36.00,tip:4.00,client:'Diego R.',clientAddr:'Calle 12 #3-15',coords:[4.650,-74.062]},
-    {code:'AK-1050',rest:'Jugo Express',restAddr:'Parque Central K-3',dist:'7.3 km',distM:7300,items:'Smoothie Mango x4',total:18.00,tip:2.00,client:'Sofía H.',clientAddr:'Diag 40 #5-8',coords:[4.655,-74.075]},
-  ];
+var CO={c:[4.6561,-74.0612],r:[4.658,-74.064],cl:[4.652,-74.058],ds:[4.662,-74.068],de:[4.652,-74.058]};
+function gR(){var r=[];for(var i=0;i<=50;i++){var t=i/50;r.push([CO.ds[0]+(CO.de[0]-CO.ds[0])*t+Math.sin(t*Math.PI*2)*.0015,CO.ds[1]+(CO.de[1]-CO.ds[1])*t+Math.cos(t*Math.PI*1.5)*.0008])}return r}
+
+function toast(t,m,tp){var c=document.getElementById('toasts');var co={info:'#7C3AED',ok:'#10B981',wn:'#F59E0B,no:'#EF4444'};var ic={info:'fa-bell',ok:'fa-check-circle',wn:'fa-exclamation-triangle',no:'fa-times-circle'};var el=document.createElement('div');el.className='toast';el.innerHTML='<div class="tI" style="background:'+co[tp]+'22;color:'+co[tp]+'"><i class="fas '+ic[tp]+'"></i></div><div class="tB"><div class="tT">'+t+'</div><div class="tM">'+m+'</div></div>';c.appendChild(el);setTimeout(function(){el.classList.add('out');setTimeout(function(){el.remove()},200)},3500)}
+function om(h){document.getElementById('modal').innerHTML='<div class="moO" onclick="if(event.target===this)cm()"><div class="moC">'+h+'</div></div>'}
+function cm(){document.getElementById('modal').innerHTML=''}
+
+function doLogin(){var i=document.getElementById('lI').value.trim();if(!i){toast('Error','Ingresa tu ID','no');return}S.user=i;sv('ak_d_u',i);checkAcc()}
+function qLogin(){S.user='REP-0042';sv('ak_d_u',S.user);checkAcc()}
+if(ld('ak_d_u',null)){S.user=ld('ak_d_u');setTimeout(checkAcc,50)}
+function checkAcc(){document.getElementById('pgL').style.display='none';if(!S.approved){document.getElementById('pgL').style.display='flex';document.getElementById('pgL').querySelector('.gc').innerHTML='<div style="text-align:center;padding:30px"><div style="width:50px;height:50px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;background:rgba(239,68,68,.13)"><i class="fas fa-ban" style="font-size:18px;color:var(--no)"></i></div><h2 style="font-size:16px;font-weight:700;margin-bottom:6px">No aprobado</h2><p style="font-size:12px;color:var(--tx2)">Tu cuenta no ha sido aprobada por servicio técnico aún.</p><button onclick="qLogin()" class="bS" style="margin-top:12px">Volver</button></div>';return}document.getElementById('pgA').style.display='block';iD()}
+function checkAcc(){document.getElementById('pgL').style.display='none';document.getElementById('pgA').style.display='block';iD()}
+
+function iD(){rAvail();renderAct();renderEarn();renderProf()}
+function goT(t){var ts=['avail','act','earn','prof'];for(var i=0;i<ts.length;i++){var el=document.getElementById('t-'+ts[i]);if(el)el.style.display='none'}var el2=document.getElementById('t-'+t);if(el2)el2.style.display='block';var ns=document.querySelectorAll('.ni');for(var j=0;j<ns.length;j++){ns[j].classList.toggle('on',ts[j]===t}if(t==='avail')setTimeout(iDM,80)}
+
+function rAvail(){
+var el=document.getElementById('t-avail');
+var pending=S.avail.filter(function(o){return true});
+el.innerHTML='<div class="page"><div style="padding:12px 14px"><div style="display:flex;align-items:center;justify-content:var(--tx2);margin-bottom:10px"><h3 style="font-weight:700;font-size:15px">Pedidos Cercanos</h3><span class="badge bPr" style="margin-left:8px"><i class="fas fa-location-dot" style="font-size:8px"></i>10 km</span></div>'+
+'<div id="dMap" style="height:220px;border-radius:14px;overflow:hidden;border:1px solid var(--bd);margin-bottom:10px"></div>'+
+'<div style="font-size:11px;color:var(--tx3);margin-bottom:8px">'+pending.length+' pedidos disponibles</div><div style="display:flex;flex-direction:column;gap:6px">';
+for(var i=0;i<pending.length;i++){var o=pending[i];
+el+='<div class="gc aU" style="padding:12px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><span class="font-bold" style="font-size:12px;color:var(--ok)">'+o.code+'</span><span class="badge bPr" style="font-size:9px"><i class="fas fa-route" style="font-size:7px"></i>'+o.dist+'</span></div><div style="font-size:12px;font-weight:600">'+o.rest+'</div><div style="font-size:11px;color:var(--tx2);margin-bottom:2px">'+o.items+'</div><div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--tx3)"><i class="fas fa-user" style="margin-right:3px"></i>'+o.client+'<i class="fas fa-location-dot" style="margin-left:auto;margin-right:3px"></i>'+o.clientAddr+'</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--bd)"><div><span class="font-bold">Q'+o.total.toFixed(2)+'</span><span class="font-size:10px;color:var(--ok)">+ Q'+o.tip+' propina</span></div><div style="display:flex;gap:4px"><button onclick="accDOrd(\''+o.code+'\')" class="bOk" style="padding:7px 12px;font-size:11px"><i class="fas fa-check" style="margin-right:3px"></i>Aceptar</button><button onclick="cancelDOrd(\''+o.code+'\')" class="bNo" style="padding:7px 12px;font-size:11px"><i class="fas fa-times"></i></button></div></div></div>'}
+if(!pending.length)el.innerHTML+='<div style="text-align:center;padding:30px;color:var(--text3)"><i class="fas fa-inbox-slash" style="font-size:20px;display:block;margin-bottom:6px"></i>No hay pedidos</div>';
+el.innerHTML+='</div></div>'}
+
+function iDM(){if(S.maps.av){S.maps.av.remove();S.maps.av=null}
+var map=L.map('dMap',{zoomControl:false}).setView(CO.c,14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}/{y}.png',{attribution:'© OSM'}).addTo(map);
+L.circle(CO.c,{radius:10000,color:'#10B981',fillColor:'#10B8981',fillOpacity:.04,weight:1}).addTo(map);
+var yI=L.divIcon({html:'<div style="width:14px;height:14px;border-radius:50%;background:var(--ok);border:2px solid #fff;box-shadow:0 0 8px rgba(16,185,129,.5)"></div>',iconSize:[14,14],iconAnchor:[7,7],className:''});
+L.marker(CO.c,{icon:yI}).addTo(map).bindPopup('Tu ubicación');
+var oI=L.divIcon({html:'<div style="background:var(--a);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.3)"><i class="fas fa-utensils" style="color:#000;font-size:9px"></i></div>',iconSize:[22,22],iconAnchor:[11,11],className:''});
+for(var i=0;i<pending.length;i++){L.marker(pending[i].coords,{icon:oI}).addTo(map).bindPopup(pending[i].code)}
+S.maps.av=map}
+
+function accDOrd(code){
+var o=mf(S.avail,function(x){return x.code===code});if(!o)return;
+S.avail=S.avail.filter(function(x){return x.code!==code});sv('ak_d_av',S.avail);S.activeDelivery={code:o.code,rest:o.rest,restAddr:o.restAddr,client:o.client,clientAddr:o.clientAddr,items:o.items,total:o.total,status:'picking',tip:o.tip};
+S.actD=S.activeDelivery;renderAct();goT('act');
+toast('Pedido Aceptado','Ve a recoger a '+o.rest,'ok');
+sm('client','order_pickedup',{orderCode:code,driverName:'Carlos M.'});
+renderAvail();
 }
 
-function getSampleEarnings(){
-  return[
-    {code:'AK-1042',earning:3.17,comm:0.17,time:'10:45',type:'fijo'},
-    {code:'AK-1041',earning:3.01,comm:0.26,time:'10:20',type:'comisionable'},
-    {code:'AK-1039',earning:2.70,comm:0.04,time:'09:55',type:'comisionable'},
-    {code:'AK-1038',earning:3.30,comm:0.16,time:'09:30',type:'fijo'},
-    {code:'AK-1037',earning:2.80,comm:0.06,time:'09:10',type:'comisionable'},
-    {code:'AK-1036',earning:3.50,comm:0.30,time:'08:45',type:'fijo'},
-    {code:'AK-1035',earning:2.66,comm:0.16,time:'08:20',type:'comisionable'},
-  ];
+function cancelDOrd(code){S.avail.push(mf(S.avail,function(x){return x.code===code})[0]);sv('ak_d_av',S.avail);if(S.activeDelivery)renderAct();renderAvail();toast('Cancelado','Pedido liberado','wn')}
+function renderAct(){
+var el=document.getElementById('t-act');var d=S.activeDelivery;if(!d){el.innerHTML='<div class="page" style="padding:30px 14px;text-align:center;color:var(--tx3)"><i class="fas fa-route" style="font-size:24px;display:block;margin-bottom:8px">Sin entregas activas</div>';return}
+var earn=(2.50+d.tip);var comm=d.total*0.02;var net=earn-comm;
+el.innerHTML='<div class="page"><div style="padding:12px 14px">'+
+'<div class="gc" style="padding:14px;margin-bottom:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:var(--a)"><i class="fas fa-box" style="color:#000;font-size:13px"></i></div><div style="flex:1"><div style="font-weight:600;font-size:13px">Recoger en</div><div style="font-size:11px;color:var(--tx2)">'+d.rest+'</div></div><div style="margin-left:auto"><span class="badge bWn">Recoger</span></div></div><div style="display:flex;align-items:start;gap:10px;margin-top:10px"><i class="fas fa-location-dot" style="color:var(--pl);font-size:13px;margin-top:2px"></i><div><div style="font-weight:600;font-size:13px">'+d.client+'</div><div style="font-size:11px;color:var(--tx2)">'+d.clientAddr+'</div></div></div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px"><div><div style="font-size:11px;color:var(--tx2)">Envío + propina</div><div class="font-weight-700;font-size:13px">Q'+(earn.toFixed(2)+'</div></div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--bd)"><span style="font-size:11px;color:var(--tx2)">Comisión 2%</span><span style="font-size:12px;font-weight:600;color:var(--no)">- Q'+comm.toFixed(2)+'</span></div></div></div>'+
+'<div id="actMap" style="height:260px;border-radius:14px;overflow:hidden;border:1px solid var(--bd);margin-bottom:10px"></div>'+
+'<div style="display:flex;gap:8px"><button onclick="pickup()" class="bOk" style="flex:1;padding:10px" id="bPickup"><i class="fas fa-box" style="margin-right:4px"></i>Confirmar Recogida</button><button onclick="cancelDel()" class="bNo" style="padding:10px"><i class="fas fa-times" style="margin-right:4px"></i>Cancelar</button></div></div></div>'}
+
+function pickup(){if(!S.activeDelivery)return;
+S.activeDelivery.status='delivering';
+document.getElementById('bPickup').classList.add('hidden');
+document.getElementById('bCmplt').classList.remove('hidden');
+sm('client','order_pickedup',{orderCode:S.activeDelivery.code,driverName:'Carlos M.'});
+renderAct();toast('Recogido','Dirígete a '+S.activeDelivery.client,'ok')}
+
+function cancelDel(){if(!S.activeDelivery)return;
+S.avail.push({code:S.activeDelivery.code,rest:S.activeDelivery.rest,restAddr:S.activeDelivery.restAddr,items:S.activeDelivery.items,total:S.activeDelivery.total,tip:S.activeDelivery.tip,client:S.activeDelivery.client,clientAddr:S.activeDelivery.clientAddr,coords:[4.656,-74.061]});
+sv('ak_d_av',S.activeDelivery);S.activeDelivery=null;
+if(S.tI){clearInterval(S.tI);S.tI=null}
+renderAct();renderAvail();goT('avail');toast('Cancelado','Pedido liberado','wn');
 }
 
-const COORDS={center:[4.6561,-74.0612],rest:[4.658,-74.064],client:[4.652,-74.058],delS:[4.662,-74.068]};
+function renderAct(){
+var el=document.getElementById('t-act');
+var d=S.activeDelivery;if(!d){el.innerHTML='<div class="page" style="padding:30px 14px;text-align:center;color:var(--tx3)"><i class="fas fa-route" style="font-size:24px;display:block;margin-bottom:8px">Sin entregas activas</div>';return}
+var earn=(2.50+d.tip);var comm=d.total*0.02;
+el.innerHTML='<div class="page"><div style="padding:12px div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="font-bold" style="font-size:15px;color:var(--ok)">'+d.code+'</span><span class="badge bOk" style="font-size:10px"><i class="fas fa-motorcycle" style="font-size:7px"></i>En camino</span></div><div class="gc" style="padding:12px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div class="w-10 h-10 rounded-full flex items-center justify-content:center" style="background:var(--a)"><i class="fas fa-store" style="color:#000;font-size:10px"></i></div><div style="flex:1"><div class="font-semibold text-xs">Recoger en</div><div class="text-xs" style="color:var(--tx2)">'+d.rest+'</div></div></div><div class="w-10 h-10 rounded-full flex items-center justify-content:center" style="background:var(--p)"><i class="fas fa-house" style="color:#fff;font-size:10px"></i></div><div style="flex:1"><div class="font-semibold text-xs">Entregar a</div><div class="text-xs" style="color:var(--tx2)">'+d.client+'</div></div></div></div><div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--bd)"><div style="font-size:11px;color:var(--tx2)">Ganancia</div><div style="font-size:12px;font-weight:700;color:var(--ok)">Q'+earn.toFixed(2)+'<span style="font-size:10px;color:var(--no);margin-left:4px">- Q'+comm.toFixed(2)+' comisión</span></div></div></div>'+
+'<div id="actMap" style="height:240px;border-radius:14px;overflow:hidden;border:1px solid var(--bd);margin-bottom:10px"></div>'+
+'<div class="flex gap-3"><button onclick="completeDel()" class="bOk" style="flex:1;padding:11px" id="bCmplt"><i class="fas fa-check-circle" style="margin-right:4px"></i>Confirmar Entrega</button><button onclick="toast(\'Problema\',\'Reportar problema al soporte\',\'wn\')" class="bS" style="padding:11px"><i class="fas fa-flag" style="margin-right:4px"></i>Reportar</button></div></div></div>'}
 
-function genRoute(){const r=[];for(let i=0;i<=50;i++){const t=i/50;r.push([COORDS.delS[0]+(COORDS.client[0]-COORDS.delS[0])*t+Math.sin(t*Math.PI*2)*.0015,COORDS.delS[1]+(COORDS.client[1]-COORDS.delS[1])*t+Math.cos(t*Math.PI*1.5)*.001])}return r}
-
-// Toast
-function showToast(t,m,type='info'){
-  const c=document.getElementById('toasts');
-  const col={info:'var(--p)',ok:'var(--ok)',wn:'var(--wn)',no:'var(--no)'};
-  const ico={info:'fa-bell',ok:'fa-check-circle',wn:'fa-exclamation-triangle',no:'fa-times-circle'};
-  const el=document.createElement('div');el.className='toast';
-  el.innerHTML=`<div class="toastI" style="background:${col[type]}22;color:${col[type]}"><i class="fas ${ico[type]}"></i></div><div class="toastB"><div class="toastT">${t}</div><div class="toastM">${m}</div></div>`;
-  c.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),250)},4000);
-}
-
-function notifyPulse(){if(navigator.vibrate)navigator.vibrate([200,100,200])}
-
-function openModal(html){document.getElementById('modal').innerHTML=`<div class="moOv" onclick="if(event.target===this)closeModal()"><div class="moCt">${html}</div></div>`}
-function closeModal(){document.getElementById('modal').innerHTML=''}
-
-// Login
-function doLogin(){
-  const id=document.getElementById('lId').value.trim();
-  if(!id){showToast('Error','Ingresa tu ID de repartidor','no');return}
-  S.user=id;saveD('aky_del_user',id);checkAccess();
-}
-function quickLogin(){S.user='REP-0042';saveD('aky_del_user',S.user);checkAccess();}
-
-function checkAccess(){
-  document.getElementById('pg-login').classList.add('hidden');
-  if(!S.approved){
-    document.getElementById('pg-blocked').classList.remove('hidden');
-    document.getElementById('pg-app').classList.add('hidden');return;
-  }
-  document.getElementById('pg-blocked').classList.add('hidden');
-  document.getElementById('pg-app').classList.remove('hidden');
-  initApp();
-}
-
-function logout(){
-  S.user=null;localStorage.removeItem('aky_del_user');
-  if(S.trackingInterval)clearInterval(S.trackingInterval);
-  document.getElementById('pg-app').classList.add('hidden');
-  document.getElementById('pg-blocked').classList.add('hidden');
-  document.getElementById('pg-login').classList.remove('hidden');
-}
-
-if(loadD('aky_del_user',null)){S.user=loadD('aky_del_user');setTimeout(checkAccess,50);}
-
-function initApp(){renderAvailable();renderActive();renderEarnings();renderProfile();}
-
-function goTab(t){
-  document.querySelectorAll('.tabC').forEach(el=>el.classList.add('hidden'));
-  document.getElementById('t-'+t).classList.remove('hidden');
-  document.querySelectorAll('.ni').forEach((n,i)=>{n.classList.toggle('on',['available','active','earnings','profile'][i]===t)});
-  if(t==='available')setTimeout(initAvailMap,80);
-  if(t==='active'&&S.activeDelivery)setTimeout(initActiveMap,80);
-}
-
-function toggleOnline(){
-  S.online=!S.online;
-  const btn=document.getElementById('onlineBtn');
-  if(S.online){btn.className='badge bOk cursor-pointer text-xs';btn.innerHTML='<span class="onlineDot"></span>En línea';showToast('En Línea','Ahora recibirás pedidos','ok');}
-  else{btn.className='badge bNo cursor-pointer text-xs';btn.innerHTML='<i class="fas fa-circle" style="font-size:5px"></i>Desconectado';showToast('Desconectado','No recibirás nuevos pedidos','wn');}
-}
-
-// === PEDIDOS DISPONIBLES ===
-function renderAvailable(){
-  const el=document.getElementById('t-available');
-  const filtered=S.online?S.available:[];
-  el.innerHTML=`<div class="p-4">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="font-bold text-lg">Pedidos Cercanos</h3>
-      <span class="badge bPr"><i class="fas fa-location-dot"></i>10 km</span>
-    </div>
-    <div id="availMap" style="height:220px;border-radius:16px;overflow:hidden;border:1px solid var(--bd);margin-bottom:12px"></div>
-    <div class="text-xs mb-2" style="color:var(--tx3)">${filtered.length} pedidos disponibles</div>
-    <div class="space-y-2.5">
-      ${filtered.length?filtered.map(o=>availCard(o)).join(''):`<div class="text-center py-10" style="color:var(--tx3)"><i class="fas fa-${S.online?'inbox-slash':'power-off'} text-2xl mb-2 block"></i><p class="text-xs">${S.online?'No hay pedidos disponibles ahora':'Conéctate para ver pedidos'}</p></div>`}
-    </div>
-  </div>`;
-}
-
-function availCard(o){
-  const earn=(2.50+o.tip).toFixed(2);
-  const comm=(o.total*0.02).toFixed(2);
-  return`<div class="gc p-3.5 aUp">
-    <div class="flex items-center justify-between mb-1.5">
-      <span class="font-bold text-sm" style="color:var(--ok)">${o.code}</span>
-      <span class="badge bPr"><i class="fas fa-route" style="font-size:9px"></i> ${o.dist}</span>
-    </div>
-    <div class="text-sm font-semibold">${o.rest}</div>
-    <div class="text-xs mt-0.5" style="color:var(--tx2)">${o.items}</div>
-    <div class="flex items-center gap-3 mt-1.5 text-xs" style="color:var(--tx3)">
-      <span><i class="fas fa-user mr-1"></i>${o.client}</span>
-      <span><i class="fas fa-location-dot mr-1"></i>${o.clientAddr}</span>
-    </div>
-    <div class="flex items-center justify-between mt-2.5 pt-2.5 border-t" style="border-color:var(--bd)">
-      <div>
-        <span class="font-bold">$${o.total.toFixed(2)}</span>
-        <span class="text-xs ml-1.5" style="color:var(--ok)">+ $${earn} envío</span>
-        ${S.driverType==='comisionable'?`<div class="text-xs mt-0.5" style="color:var(--wn)">Comisión 2%: -$${comm}</div>`:''}
-      </div>
-      <button onclick="acceptOrder('${o.code}')" class="btnOk btn-sm" style="padding:8px 14px"><i class="fas fa-check"></i> Aceptar</button>
-    </div>
-  </div>`;
-}
-
-function addAvailableOrder(d){
-  notifyPulse();
-  const exists=S.available.find(o=>o.code===d.orderCode);
-  if(exists)return;
-  S.available.unshift({
-    code:d.orderCode,rest:d.restName,restAddr:'',dist:'1.8 km',distM:1800,
-    items:d.items,total:d.total,tip:2.00,client:d.client||'Cliente',clientAddr:'',
-    coords:[4.6561+Math.random()*.006-0.003,-74.0612+Math.random()*.006-0.003]
-  });
-  saveD('aky_del_avail',S.available);
-  renderAvailable();
-  showToast('Nuevo Pedido Disponible',d.orderCode+' - '+d.restName,'ok');
-}
-
-function initAvailMap(){
-  if(S.maps.avail){S.maps.avail.remove();S.maps.avail=null}
-  const map=L.map('availMap',{zoomControl:false}).setView(COORDS.center,14);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(map);
-  S.maps.avail=map;
-  // Círculo 10km
-  L.circle(COORDS.center,{radius:10000,color:'#10B981',fillColor:'#10B981',fillOpacity:.04,weight:1}).addTo(map);
-  // Tu ubicación
-  const youIco=L.divIcon({html:'<div style="width:16px;height:16px;border-radius:50%;background:var(--ok);border:3px solid #fff;box-shadow:0 0 12px rgba(16,185,129,.6)"></div>',iconSize:[16,16],iconAnchor:[8,8],className:''});
-  L.marker(COORDS.center,{icon:youIco}).addTo(map).bindPopup('Tu ubicación');
-  // Pedidos
-  const ordIco=L.divIcon({html:'<div style="background:var(--a);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)"><i class="fas fa-utensils" style="color:#000;font-size:10px"></i></div>',iconSize:[26,26],iconAnchor:[13,13],className:''});
-  S.available.forEach(o=>{
-    if(o.coords)L.marker(o.coords,{icon:ordIco}).addTo(map).bindPopup(o.code+' - '+o.rest);
-  });
-}
-
-function acceptOrder(code){
-  const o=S.available.find(x=>x.code===code);if(!o)return;
-  S.activeDelivery={code:o.code,rest:o.rest,restAddr:o.restAddr,client:o.client,clientAddr:o.clientAddr,items:o.items,total:o.total,tip:o.tip,status:'picking'};
-  S.available=S.available.filter(x=>x.code!==code);
-  saveD('aky_del_avail',S.available);
-  S.sentProximity=false;
-
-  showToast('Pedido Aceptado','Ve a recoger en '+o.rest,'ok');
-  sendMsg('client','order_pickedup',{orderCode:code,driverName:'Carlos M.'});
-  sendMsg('restaurant','driver_assigned',{orderCode:code});
-  goTab('active');
-}
-
-// === ENTREGA ACTIVA ===
-function renderActive(){
-  const el=document.getElementById('t-active');
-  const d=S.activeDelivery;
-  if(!d){
-    el.innerHTML=`<div class="p-4 text-center py-16" style="color:var(--tx3)"><i class="fas fa-route text-3xl mb-3 block"></i><p>Sin entregas activas</p><p class="text-xs mt-1">Acepta un pedido para comenzar</p></div>`;return;
-  }
-  const earn=(2.50+d.tip).toFixed(2);
-  const comm=(d.total*0.02).toFixed(2);
-  const net=(parseFloat(earn)-parseFloat(comm)).toFixed(2);
-
-  el.innerHTML=`<div class="p-4">
-    <!-- Info del pedido -->
-    <div class="gc p-4 mb-3 aUp">
-      <div class="flex items-center justify-between mb-3">
-        <span class="font-bold text-lg" style="color:var(--ok)">${d.code}</span>
-        <span class="badge ${d.status==='picking'?'bWn':'bOk'}">${d.status==='picking'?'<i class="fas fa-box" style="font-size:9px"></i> Recoger':'<i class="fas fa-motorcycle" style="font-size:9px"></i> En camino'}</span>
-      </div>
-      <!-- Recoger -->
-      <div class="gc p-3 mb-2.5" style="background:var(--bg)">
-        <div class="flex items-center gap-2 mb-1">
-          <div class="w-7 h-7 rounded-full flex items-center justify-center" style="background:rgba(245,158,11,.15)"><i class="fas fa-store text-xs" style="color:var(--a)"></i></div>
-          <div><div class="text-xs" style="color:var(--tx3)">Recoger en</div><div class="text-sm font-semibold">${d.rest}</div></div>
-        </div>
-      </div>
-      <!-- Entregar -->
-      <div class="gc p-3" style="background:var(--bg)">
-        <div class="flex items-center gap-2 mb-1">
-          <div class="w-7 h-7 rounded-full flex items-center justify-center" style="background:rgba(124,58,237,.15)"><i class="fas fa-house text-xs" style="color:var(--pl)"></i></div>
-          <div><div class="text-xs" style="color:var(--tx3)">Entregar a</div><div class="text-sm font-semibold">${d.client}</div><div class="text-xs" style="color:var(--tx2)">${d.clientAddr}</div></div>
-        </div>
-      </div>
-      <!-- Ganancia -->
-      <div class="mt-3 pt-3 border-t" style="border-color:var(--bd)">
-        <div class="text-xs mb-1.5" style="color:var(--tx3)">Desglose de ganancia</div>
-        <div class="flex justify-between text-sm mb-1"><span style="color:var(--tx2)">Envío + propina</span><span>$${earn}</span></div>
-        ${S.driverType==='comisionable'?`<div class="flex justify-between text-sm mb-1"><span style="color:var(--tx2)">Comisión 2%</span><span style="color:var(--no)">-$${comm}</span></div>`:''}
-        <div class="flex justify-between font-bold"><span>Ganancia neta</span><span style="color:var(--ok)">$${net}</span></div>
-      </div>
-    </div>
-
-    <!-- Mapa -->
-    <div id="activeMap" style="height:280px;border-radius:16px;overflow:hidden;border:1px solid var(--bd);margin-bottom:12px"></div>
-
-    <!-- Progreso -->
-    <div class="gc p-3 mb-3 aUp d1">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-medium" style="color:var(--tx2)">Progreso de entrega</span>
-        <span class="text-xs font-bold" id="actPct" style="color:var(--ok)">0%</span>
-      </div>
-      <div class="pbar"><div class="pfill" id="actProg" style="width:0%;background:linear-gradient(90deg,var(--ok),#34D399)"></div></div>
-    </div>
-
-    <!-- Acciones -->
-    <div class="flex gap-2.5">
-      ${d.status==='picking'?`
-        <button onclick="pickupOrder()" class="btnOk flex-1"><i class="fas fa-box mr-1"></i>Confirmar Recogida</button>
-        <button onclick="cancelDelivery()" class="btnNo btn-sm" style="padding:10px 14px"><i class="fas fa-times"></i></button>
-      `:`
-        <button onclick="completeDelivery()" class="btnOk flex-1"><i class="fas fa-check-circle mr-1"></i>Confirmar Entrega</button>
-        <button onclick="showToast('Problema','Reportar problema al soporte','wn')" class="btnS btn-sm" style="padding:10px 14px"><i class="fas fa-flag"></i></button>
-      `}
-    </div>
-  </div>`;
-  setTimeout(initActiveMap,80);
-}
-
-function initActiveMap(){
-  if(S.maps.active){S.maps.active.remove();S.maps.active=null}
-  if(S.trackingInterval){clearInterval(S.trackingInterval);S.trackingInterval=null}
-  S.motorPath=genRoute();S.motorIdx=0;S.sentProximity=false;
-  const map=L.map('activeMap',{zoomControl:false}).setView(COORDS.center,15);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(map);
-  S.maps.active=map;
-
-  const mkIco=(bg,icon,iconCol)=>L.divIcon({html:`<div style="background:${bg};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)"><i class="fas ${icon}" style="color:${iconCol};font-size:12px"></i></div>`,iconSize:[30,30],iconAnchor:[15,15],className:''});
-
-  L.marker(COORDS.rest,{icon:mkIco('#F59E0B','fa-store','#000')}).addTo(map).bindPopup('Recoger aquí');
-  L.marker(COORDS.client,{icon:mkIco('#7C3AED','fa-house','#fff')}).addTo(map).bindPopup('Entregar aquí');
-  L.polyline(S.motorPath,{color:'#10B981',weight:4,opacity:.5,dashArray:'8 8'}).addTo(map);
-
-  const d=S.activeDelivery;
-  const startCoord=d.status==='picking'?COORDS.center:S.motorPath[0];
-  const motoIco=L.divIcon({html:'<div class="motoMk"><svg viewBox="0 0 48 48" width="42" height="42"><circle cx="24" cy="24" r="20" fill="#10B981" stroke="#fff" stroke-width="2.5"/><path d="M14 28l3-7h5l1.5 3h5l-1.5-3h2.5l3.5 7" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="30" r="3" fill="none" stroke="#fff" stroke-width="1.5"/><circle cx="33" cy="30" r="3" fill="none" stroke="#fff" stroke-width="1.5"/></svg></div>',iconSize:[42,42],iconAnchor:[21,21],className:''});
-  S.motorMarker=L.marker(startCoord,{icon:motoIco}).addTo(map);
-
-  // Si ya está en camino, animar
-  if(d.status==='delivering')startTracking();
-}
-
-function pickupOrder(){
-  if(!S.activeDelivery)return;
-  S.activeDelivery.status='delivering';
-  showToast('Pedido Recogido','Dirígete a la dirección de entrega','ok');
-  sendMsg('client','order_pickedup',{orderCode:S.activeDelivery.code,driverName:'Carlos M.'});
-  renderActive();
-  setTimeout(startTracking,100);
-}
-
-function startTracking(){
-  if(S.trackingInterval)clearInterval(S.trackingInterval);
-  S.trackingInterval=setInterval(()=>{
-    S.motorIdx++;
-    if(S.motorIdx>=S.motorPath.length){S.motorIdx=S.motorPath.length-1;return;}
-    const lat=S.motorPath[S.motorIdx][0];
-    const lng=S.motorPath[S.motorIdx][1];
-    S.motorMarker.setLatLng([lat,lng]);
-    // Enviar ubicación al cliente
-    sendMsg('client','driver_location',{orderCode:S.activeDelivery.code,lat,lng});
-    // Actualizar progreso
-    const pct=Math.round(S.motorIdx/S.motorPath.length*100);
-    const prog=document.getElementById('actProg');
-    const pctEl=document.getElementById('actPct');
-    if(prog)prog.style.width=pct+'%';
-    if(pctEl)pctEl.textContent=pct+'%';
-    // Proximidad
-    if(pct>75&&!S.sentProximity){
-      S.sentProximity=true;
-      showToast('Cerca del destino','Estás a menos de 200m del cliente','wn');
-      sendMsg('client','proximity_alert',{orderCode:S.activeDelivery.code});
-    }
-  },800);
-}
-
-function completeDelivery(){
-  if(!S.activeDelivery)return;
-  if(S.trackingInterval){clearInterval(S.trackingInterval);S.trackingInterval=null}
-  const d=S.activeDelivery;
-  const earn=2.50+d.tip;
-  const comm=d.total*0.02;
-  const net=earn-comm;
-
-  // Registrar ganancia
-  S.earnings.unshift({code:d.code,earning:parseFloat(net.toFixed(2)),comm:parseFloat(comm.toFixed(2)),time:new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}),type:S.driverType});
-  saveD('aky_del_earnings',S.earnings);
-
-  // Actualizar balance
-  S.balance+=net;
-  S.completedToday++;
-
-  // Descontar comisión del saldo
-  S.commission=Math.max(0,S.commission-comm);
-  if(S.commission<=5){showToast('Saldo Bajo','Tu saldo de comisión está bajo. Recarga para seguir entregando.','wn')}
-
-  // Notificar al cliente
-  sendMsg('client','order_delivered',{orderCode:d.code});
-
-  S.activeDelivery=null;
-  showToast('Entrega Completada','Ganaste $'+net.toFixed(2),'ok');
-  if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
-  renderActive();renderEarnings();renderProfile();
-}
-
-function cancelDelivery(){
-  if(!S.activeDelivery)return;
-  openModal(`<div class="text-center py-3">
-    <div class="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center" style="background:rgba(239,68,68,.13)"><i class="fas fa-times-circle text-xl" style="color:var(--no)"></i></div>
-    <h3 class="font-bold text-lg mb-2">Cancelar Entrega</h3>
-    <p class="text-sm mb-4" style="color:var(--tx2)">Se liberará el pedido para otro repartidor</p>
-    <div class="flex gap-3"><button onclick="closeModal()" class="btnS flex-1">Volver</button><button onclick="confirmCancel()" class="btnNo flex-1">Cancelar</button></div>
-  </div>`);
-}
-
-function confirmCancel(){
-  if(S.trackingInterval){clearInterval(S.trackingInterval);S.trackingInterval=null}
-  const code=S.activeDelivery.code;
-  // Devolver pedido a disponibles
-  S.available.push(S.available.find(x=>x.code===code)||{code,rest:S.activeDelivery.rest,dist:'3 km',distM:3000,items:S.activeDelivery.items,total:S.activeDelivery.total,tip:2,client:S.activeDelivery.client,clientAddr:S.activeDelivery.clientAddr,coords:[4.656,-74.061]});
-  saveD('aky_del_avail',S.available);
-  S.activeDelivery=null;closeModal();
-  showToast('Entrega Cancelada','Pedido liberado','no');
-  goTab('available');
-}
-
-// === GANANCIAS ===
-function renderEarnings(){
-  const el=document.getElementById('t-earnings');
-  const todayEarn=S.earnings.filter(e=>true).reduce((s,e)=>s+e.earning,0);
-  const todayComm=S.earnings.reduce((s,e)=>s+e.comm,0);
-  el.innerHTML=`<div class="p-4">
-    <h3 class="font-bold text-lg mb-4">Mis Ganancias</h3>
-
-    <!-- Balance principal -->
-    <div class="gc p-5 mb-4 text-center earnCard aUp">
-      <div class="text-xs mb-1" style="color:var(--tx2)">Balance Disponible</div>
-      <div class="text-4xl font-black" style="color:var(--ok)">$${S.balance.toFixed(2)}</div>
-      <div class="text-xs mt-1" style="color:var(--tx3)">Comisión 2% descontada por entrega</div>
-      <div class="flex gap-2.5 justify-center mt-4">
-        <button onclick="showToast('Retiro','Función de retiro (requiere servidor)','info')" class="btnOk btn-sm"><i class="fas fa-money-bill-transfer mr-1"></i>Retirar</button>
-        <button onclick="showCommissionModal()" class="btnS btn-sm"><i class="fas fa-plus mr-1"></i>Recargar</button>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-3 gap-2 mb-4">
-      <div class="gc p-3 text-center aUp d1"><div class="text-lg font-bold">${S.completedToday}</div><div class="text-xs" style="color:var(--tx3)">Entregas hoy</div></div>
-      <div class="gc p-3 text-center aUp d2"><div class="text-lg font-bold" style="color:var(--wn)">-$${todayComm.toFixed(2)}</div><div class="text-xs" style="color:var(--tx3)">Comisiones</div></div>
-      <div class="gc p-3 text-center aUp d3"><div class="text-lg font-bold" style="color:var(--ok)">+$${todayEarn.toFixed(2)}</div><div class="text-xs" style="color:var(--tx3)">Ganado</div></div>
-    </div>
-
-    <!-- Saldo comisión -->
-    <div class="gc p-3 mb-4 aUp d2">
-      <div class="flex items-center justify-between mb-2">
-        <div class="flex items-center gap-2"><i class="fas fa-coins" style="color:var(--a)"></i><span class="text-sm font-medium">Saldo de Comisión</span></div>
-        <span class="font-bold ${S.commission<=10?'':'text-sm'}" style="color:${S.commission<=10?'var(--no)':'var(--ok)'}">$${S.commission.toFixed(2)}</span>
-      </div>
-      <div class="pbar"><div class="pfill" style="width:${Math.min(100,S.commission)}%;background:${S.commission<=10?'var(--no)':'linear-gradient(90deg,var(--a),#D97706)'}"></div></div>
-      ${S.commission<=10?`<div class="text-xs mt-1.5" style="color:var(--no)"><i class="fas fa-exclamation-triangle mr-1"></i>Saldo bajo. Recarga para seguir entregando.</div>`:''}
-    </div>
-
-    <!-- Historial -->
-    <h4 class="font-semibold text-sm mb-3">Historial de Ganancias</h4>
-    <div class="space-y-2">
-      ${S.earnings.map(e=>`
-        <div class="gc p-3 flex items-center justify-between earnCard">
-          <div>
-            <div class="text-sm font-semibold">${e.code}</div>
-            <div class="flex items-center gap-2 mt-0.5">
-              <span class="text-xs" style="color:var(--tx3)">${e.time}</span>
-              <span class="badge text-xs" style="background:var(--bg);color:${e.type==='fijo'?'var(--ok)':'var(--a)'};font-size:9px">${e.type==='fijo'?'Fijo':'Comisionable'}</span>
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="font-bold text-sm" style="color:var(--ok)">+$${e.earning.toFixed(2)}</div>
-            <div class="text-xs" style="color:var(--no)">Comisión: -$${e.comm.toFixed(2)}</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  </div>`;
-}
-
-function showCommissionModal(){
-  openModal(`<h3 class="font-bold text-lg mb-4"><i class="fas fa-coins mr-2" style="color:var(--a)"></i>Recargar Comisión</h3>
-    <p class="text-xs mb-4" style="color:var(--tx2)">Mantén saldo para cubrir la comisión del 2% por cada entrega completada.</p>
-    <div class="text-center mb-4">
-      <div class="text-xs" style="color:var(--tx3)">Saldo actual</div>
-      <div class="text-2xl font-bold" style="color:${S.commission<=10?'var(--no)':'var(--ok)'}">$${S.commission.toFixed(2)}</div>
-    </div>
-    <div class="grid grid-cols-3 gap-2 mb-4">
-      <button onclick="addComm(10)" class="btnS text-center py-3"><div class="font-bold">$10</div></button>
-      <button onclick="addComm(20)" class="btnS text-center py-3" style="border-color:var(--a);color:var(--a)"><div class="font-bold">$20</div></button>
-      <button onclick="addComm(50)" class="btnS text-center py-3"><div class="font-bold">$50</div></button>
-    </div>
-    <div><label class="text-xs font-medium mb-1 block" style="color:var(--tx2)">Otro monto</label><input class="inp mb-3" id="commAmt" type="number" placeholder="Monto personalizado"></div>
-    <button onclick="addCommCustom()" class="btnOk w-full"><i class="fas fa-plus mr-2"></i>Recargar</button>
-  `);
-}
-
-function addComm(amt){
-  S.commission+=amt;closeModal();
-  showToast('Recarga Exitosa','+$'+amt.toFixed(2)+' agregados a tu saldo','ok');
-  renderEarnings();renderProfile();
-}
-
-function addCommCustom(){
-  const amt=parseFloat(document.getElementById('commAmt').value);
-  if(!amt||amt<=0){showToast('Error','Ingresa un monto válido','no');return}
-  addComm(amt);
-}
-
-// === PERFIL ===
-function renderProfile()
+function initActMap(){
+if(S.maps.act){S.maps.act.remove();S.maps.act=null}
+if(S.tI){clearInterval(S.tI);S.tI=null}
+S.mp=gR();S.mi=0;S.np=false;
+var map=L.map('actMap',{zoomControl:false}).setView(CO.c,15);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(map);
+S.maps.act=map;
+var rI=L.divIcon({html:'<div style="background:var(--a);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.3)"><i class="fas fa-store" style="color:#000;font-size:10px"></i></div>',iconSize:[26,26],iconAnchor:[13,13],className:''});
+var cI=L.divIcon({html:'<div style="background:var(--p);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.3)"><i class="fas fa-house" style="color:#fff;font-size:10px"></i></div>',iconSize:[26,26],iconAnchor:[13,13],className:''});
+L.marker(CO.r,{icon:rI}).addTo(map).bindPopup('Recoger');
+L.marker(CO.cl,{icon:cI}).addTo(map).bindPopup('Entregar');
+L.polyline(S.mp,{color:'#10B981',weight:3,opacity:.5,dashArray:'8 8'}).addTo(map);
+var dI=L.divIcon({html:'<div class="motoMk"><svg viewBox="0 0 48 48" width="36" height="36"><circle cx="24" cy="24" r="20" fill="#10B981" stroke="#fff" stroke-width="2.5"/><path d="M14 28l3-7h5l1.5 3h5l-1.5-3h2.5l3.5 7" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="30" r="3" fill="none" stroke="#fff" stroke-width="1.5"/><circle cx="33" cy="30" r="3" fill="none" stroke="#fff" stroke-width="1.5"/></svg></div>',iconSize:[36,36],iconAnchor:[18,18],className:''});
+S.mM=L.marker(S.mp[0],{icon:dI}).addTo(map);
+S.tI=setInterval(function(){S.mi++;if(S.mi>=S.mp.length){S.mi=0;var o2=mf(S.orders,function(x){return x.status==='delivering'});if(o2){o2.status='delivered';sv('ak_c_o',S.orders);rO();toast('Entregado','Disfruta tu comida','ok');uB();clearInterval(S.tI);return}S.mM.setLatLng(S.mp[S.mi]);var pct=Math.round(S.mi/S.mp.length*100);var pr=document.getElementById('aPr');var pc=document.getElementById('aPc');if(pr)pr.style.width=pct+'%';if(pc)pc.textContent=pct+'%';if(pct>75&&!S.np){S.np=true;toast('Cerca del destino','Llega en minutos','wn')}}
+},900)}
+</script>
+</body>
+</html>
