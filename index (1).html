@@ -212,5 +212,7 @@ S.mM=L.marker(S.mp[0],{icon:dI}).addTo(map);
 S.tI=setInterval(function(){S.mi++;if(S.mi>=S.mp.length){S.mi=0;var o2=mf(S.orders,function(x){return x.status==='delivering'});if(o2){o2.status='delivered';sv('ak_c_o',S.orders);rO();toast('Entregado','Disfruta tu comida','ok');uB();clearInterval(S.tI);return}S.mM.setLatLng(S.mp[S.mi]);var pct=Math.round(S.mi/S.mp.length*100);var pr=document.getElementById('aPr');var pc=document.getElementById('aPc');if(pr)pr.style.width=pct+'%';if(pc)pc.textContent=pct+'%';if(pct>75&&!S.np){S.np=true;toast('Cerca del destino','Llega en minutos','wn')}}
 },900)}
 </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="conexion.js"></script>
 </body>
 </html>
