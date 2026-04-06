@@ -214,5 +214,33 @@ S.tI=setInterval(function(){S.mi++;if(S.mi>=S.mp.length){S.mi=0;var o2=mf(S.orde
 </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="conexion.js"></script>
+<script>
+// Sincronización en tiempo real para el Repartidor
+async function syncDeliveries() {
+    const { data, error } = await _supabase
+        .from('pedidos')
+        .select('*')
+        .order('id', { ascending: false });
+    if (data) {
+        S.avail = data.filter(o => o.Estado === 'Pendiente');
+        if(typeof renderAvail === 'function') renderAvail();
+        if(typeof renderAct === 'function') renderAct();
+    }
+}
+
+_supabase
+    .channel('driver-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, (payload) => {
+        console.log('Cambio detectado en Repartidor:', payload);
+        syncDeliveries();
+        if(payload.new && payload.new.Estado === 'Pendiente') {
+            toast('Nuevo Pedido', 'Hay un nuevo pedido disponible', 'ok');
+        }
+    })
+    .subscribe();
+
+// Carga inicial
+syncDeliveries();
+</script>
 </body>
 </html>
