@@ -44,7 +44,7 @@ body{background:var(--bg);color:var(--tx);min-height:100vh}
                 <div id="r-saldo" class="text-[10px] text-green-400">Saldo: Q0.00</div>
             </div>
         </div>
-        <button onclick="location.reload()" class="text-xs text-red-400">Salir</button>
+        <button onclick="doLogout()" class="text-xs text-red-400">Salir</button>
     </header>
 
     <div id="t-avail" class="page">
@@ -82,7 +82,6 @@ async function doLogin() {
     const code = document.getElementById('lR').value;
     if(!code) return alert('Ingresa tu ID');
     
-    // VALIDACIÓN DE WHITELIST (Solo si está activo y es rol repartidor)
     const { data, error } = await _supabase.from('perfiles').select('*').eq('id', code).eq('rol', 'repartidor').single();
     
     if(error || !data) {
@@ -90,6 +89,22 @@ async function doLogin() {
     } else if(!data.activo) {
         toast('Cuenta Inactiva', 'Tu acceso ha sido suspendido');
     } else {
+        localStorage.setItem('aky_repartidor', code);
+        initApp();
+    }
+}
+
+function doLogout() {
+    localStorage.removeItem('aky_repartidor');
+    location.reload();
+}
+
+async function initApp() {
+    const code = localStorage.getItem('aky_repartidor');
+    if(code) {
+        const { data } = await _supabase.from('perfiles').select('*').eq('id', code).single();
+        if(!data || !data.activo) return doLogout();
+        
         S.user = code;
         S.profile = data;
         document.getElementById('pgL').style.display = 'none';
@@ -161,6 +176,8 @@ async function completarEntrega(id) {
 }
 
 _supabase.channel('cambios-repartidor').on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => cargarPedidos()).subscribe();
+
+initApp();
 </script>
 </body>
 </html>
