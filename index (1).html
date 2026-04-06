@@ -30,7 +30,7 @@ body{background:var(--bg);color:var(--tx);min-height:100vh}
     <div class="gc w-full max-w-md text-center">
         <h2 class="text-2xl font-bold mb-4">AkyVoy Repartidor</h2>
         <p class="text-sm text-gray-400 mb-6">Acceso exclusivo para repartidores autorizados</p>
-        <input id="lR" class="w-full p-3 bg-gray-900 border border-gray-700 rounded mb-3" placeholder="ID de Repartidor (REP-0042)">
+        <input id="lR" class="w-full p-3 bg-gray-900 border border-gray-700 rounded mb-3" placeholder="ID de Repartidor (ej: REP-01)">
         <button onclick="doLogin()" class="bP w-full">Entrar</button>
     </div>
 </div>
@@ -57,21 +57,9 @@ body{background:var(--bg);color:var(--tx);min-height:100vh}
         <div id="act-list"></div>
     </div>
 
-    <div id="t-perfil" class="page" style="display:none">
-        <h2 class="text-xl font-bold mb-4">Mi Perfil</h2>
-        <div class="gc text-center">
-            <img id="p-foto" src="https://via.placeholder.com/100" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-green-500">
-            <p class="text-xs text-gray-400 mb-4">Sube tu foto de perfil (URL)</p>
-            <input id="new-foto" class="w-full p-2 bg-gray-900 border border-gray-700 rounded mb-3 text-xs" placeholder="URL de la imagen">
-            <button onclick="actualizarFoto()" class="bP text-xs w-full">Actualizar Foto</button>
-            <p class="text-[9px] text-gray-500 mt-4 italic">* Sujeto a moderación del panel de control</p>
-        </div>
-    </div>
-
     <nav class="bn">
         <div class="ni on" onclick="goT('avail')"><i class="fas fa-list mb-1"></i>Disponibles</div>
         <div class="ni" onclick="goT('act')"><i class="fas fa-motorcycle mb-1"></i>En Curso</div>
-        <div class="ni" onclick="goT('perfil')"><i class="fas fa-user mb-1"></i>Perfil</div>
     </nav>
 </div>
 
@@ -94,13 +82,13 @@ async function doLogin() {
     const code = document.getElementById('lR').value;
     if(!code) return alert('Ingresa tu ID');
     
-    // VALIDACIÓN DE WHITELIST (Solo si está activo en el Panel)
-    const { data, error } = await _supabase.from('repartidores').select('*').eq('id', code).single();
+    // VALIDACIÓN DE WHITELIST (Solo si está activo y es rol repartidor)
+    const { data, error } = await _supabase.from('perfiles').select('*').eq('id', code).eq('rol', 'repartidor').single();
     
     if(error || !data) {
-        toast('Acceso Denegado', 'ID no registrado en el sistema');
+        toast('Acceso Denegado', 'ID no registrado o no autorizado');
     } else if(!data.activo) {
-        toast('Cuenta Inactiva', 'Tu acceso ha sido suspendido por el administrador');
+        toast('Cuenta Inactiva', 'Tu acceso ha sido suspendido');
     } else {
         S.user = code;
         S.profile = data;
@@ -109,7 +97,6 @@ async function doLogin() {
         document.getElementById('r-nombre').textContent = data.nombre;
         document.getElementById('r-saldo').textContent = 'Saldo: Q' + data.saldo;
         document.getElementById('r-foto').src = data.foto_perfil || 'https://via.placeholder.com/40';
-        document.getElementById('p-foto').src = data.foto_perfil || 'https://via.placeholder.com/100';
         cargarPedidos();
     }
 }
@@ -117,7 +104,6 @@ async function doLogin() {
 function goT(t) {
     document.getElementById('t-avail').style.display = t === 'avail' ? 'block' : 'none';
     document.getElementById('t-act').style.display = t === 'act' ? 'block' : 'none';
-    document.getElementById('t-perfil').style.display = t === 'perfil' ? 'block' : 'none';
     document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
     event.currentTarget.classList.add('on');
 }
@@ -163,46 +149,18 @@ function renderOrders() {
 }
 
 async function aceptarPedido(id) {
-    const { error } = await _supabase.from('pedidos')
-        .update({ estado: 'En Camino', repartidor_id: S.user, repartidor_nombre: S.profile.nombre })
-        .eq('id', id);
-    if(error) toast('Error', error.message);
-    else {
-        toast('Éxito', 'Pedido aceptado. ¡En camino!');
-        cargarPedidos();
-        goT('act');
-    }
+    await _supabase.from('pedidos').update({ estado: 'En Camino', repartidor_id: S.user, repartidor_nombre: S.profile.nombre }).eq('id', id);
+    cargarPedidos();
+    goT('act');
 }
 
 async function completarEntrega(id) {
-    const { error } = await _supabase.from('pedidos').update({ estado: 'Entregado' }).eq('id', id);
-    if(error) toast('Error', error.message);
-    else {
-        toast('Éxito', 'Pedido entregado correctamente');
-        cargarPedidos();
-        goT('avail');
-    }
-}
-
-async function actualizarFoto() {
-    const url = document.getElementById('new-foto').value;
-    if(!url) return alert('Ingresa una URL');
-    const { error } = await _supabase.from('repartidores').update({ foto_perfil: url }).eq('id', S.user);
-    if(error) toast('Error', error.message);
-    else {
-        toast('Éxito', 'Foto actualizada. Pendiente de moderación.');
-        document.getElementById('p-foto').src = url;
-        document.getElementById('r-foto').src = url;
-    }
+    await _supabase.from('pedidos').update({ estado: 'Entregado' }).eq('id', id);
+    cargarPedidos();
+    goT('avail');
 }
 
 _supabase.channel('cambios-repartidor').on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => cargarPedidos()).subscribe();
-_supabase.channel('cambios-perfil').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'repartidores' }, payload => {
-    if(payload.new.id === S.user && !payload.new.activo) {
-        alert('Tu cuenta ha sido desactivada por el administrador.');
-        location.reload();
-    }
-}).subscribe();
 </script>
 </body>
 </html>
