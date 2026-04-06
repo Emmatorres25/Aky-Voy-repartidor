@@ -15,7 +15,7 @@ body{background:var(--bg);color:var(--tx);min-height:100vh}
 .gc{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px}
 .badge{padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600}
 .bOk{background:rgba(16,185,129,.13);color:var(--ok)}
-.bPr{background:rgba(124,58,237,.13);color:var(--pl)}
+.bNo{background:rgba(239,68,68,.13);color:var(--no)}
 .bn{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--bd);display:flex;justify-content:space-around;padding:10px}
 .ni{display:flex;flex-direction:column;align-items:center;color:var(--tx3);font-size:10px;cursor:pointer}
 .ni.on{color:var(--ok)}
@@ -26,26 +26,52 @@ body{background:var(--bg);color:var(--tx);min-height:100vh}
 </head>
 <body>
 
-<div id="pgL" class="flex items-center justify-center min-height-screen p-10">
+<div id="pgL" class="flex items-center justify-center min-h-screen p-10">
     <div class="gc w-full max-w-md text-center">
         <h2 class="text-2xl font-bold mb-4">AkyVoy Repartidor</h2>
+        <p class="text-sm text-gray-400 mb-6">Acceso exclusivo para repartidores autorizados</p>
         <input id="lR" class="w-full p-3 bg-gray-900 border border-gray-700 rounded mb-3" placeholder="ID de Repartidor (REP-0042)">
         <button onclick="doLogin()" class="bP w-full">Entrar</button>
     </div>
 </div>
 
 <div id="pgA" style="display:none">
+    <header class="p-4 border-bottom border-gray-800 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <img id="r-foto" src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full object-cover">
+            <div>
+                <div id="r-nombre" class="font-bold text-sm">Cargando...</div>
+                <div id="r-saldo" class="text-[10px] text-green-400">Saldo: Q0.00</div>
+            </div>
+        </div>
+        <button onclick="location.reload()" class="text-xs text-red-400">Salir</button>
+    </header>
+
     <div id="t-avail" class="page">
         <h2 class="text-xl font-bold mb-4">Pedidos Listos</h2>
         <div id="avail-list"></div>
     </div>
+
     <div id="t-act" class="page" style="display:none">
         <h2 class="text-xl font-bold mb-4">Mi Entrega Activa</h2>
         <div id="act-list"></div>
     </div>
+
+    <div id="t-perfil" class="page" style="display:none">
+        <h2 class="text-xl font-bold mb-4">Mi Perfil</h2>
+        <div class="gc text-center">
+            <img id="p-foto" src="https://via.placeholder.com/100" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-green-500">
+            <p class="text-xs text-gray-400 mb-4">Sube tu foto de perfil (URL)</p>
+            <input id="new-foto" class="w-full p-2 bg-gray-900 border border-gray-700 rounded mb-3 text-xs" placeholder="URL de la imagen">
+            <button onclick="actualizarFoto()" class="bP text-xs w-full">Actualizar Foto</button>
+            <p class="text-[9px] text-gray-500 mt-4 italic">* Sujeto a moderación del panel de control</p>
+        </div>
+    </div>
+
     <nav class="bn">
         <div class="ni on" onclick="goT('avail')"><i class="fas fa-list mb-1"></i>Disponibles</div>
         <div class="ni" onclick="goT('act')"><i class="fas fa-motorcycle mb-1"></i>En Curso</div>
+        <div class="ni" onclick="goT('perfil')"><i class="fas fa-user mb-1"></i>Perfil</div>
     </nav>
 </div>
 
@@ -54,7 +80,7 @@ body{background:var(--bg);color:var(--tx);min-height:100vh}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="conexion.js"></script>
 <script>
-let S = { user: null, orders: [] };
+let S = { user: null, profile: null, orders: [] };
 
 function toast(t, m) {
     const el = document.createElement('div');
@@ -64,26 +90,40 @@ function toast(t, m) {
     setTimeout(() => el.remove(), 3000);
 }
 
-function doLogin() {
+async function doLogin() {
     const code = document.getElementById('lR').value;
     if(!code) return alert('Ingresa tu ID');
-    S.user = code;
-    document.getElementById('pgL').style.display = 'none';
-    document.getElementById('pgA').style.display = 'block';
-    cargarPedidos();
+    
+    // VALIDACIÓN DE WHITELIST (Solo si está activo en el Panel)
+    const { data, error } = await _supabase.from('repartidores').select('*').eq('id', code).single();
+    
+    if(error || !data) {
+        toast('Acceso Denegado', 'ID no registrado en el sistema');
+    } else if(!data.activo) {
+        toast('Cuenta Inactiva', 'Tu acceso ha sido suspendido por el administrador');
+    } else {
+        S.user = code;
+        S.profile = data;
+        document.getElementById('pgL').style.display = 'none';
+        document.getElementById('pgA').style.display = 'block';
+        document.getElementById('r-nombre').textContent = data.nombre;
+        document.getElementById('r-saldo').textContent = 'Saldo: Q' + data.saldo;
+        document.getElementById('r-foto').src = data.foto_perfil || 'https://via.placeholder.com/40';
+        document.getElementById('p-foto').src = data.foto_perfil || 'https://via.placeholder.com/100';
+        cargarPedidos();
+    }
 }
 
 function goT(t) {
     document.getElementById('t-avail').style.display = t === 'avail' ? 'block' : 'none';
     document.getElementById('t-act').style.display = t === 'act' ? 'block' : 'none';
+    document.getElementById('t-perfil').style.display = t === 'perfil' ? 'block' : 'none';
     document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
     event.currentTarget.classList.add('on');
 }
 
 async function cargarPedidos() {
-    const { data } = await _supabase.from('pedidos')
-        .select('*')
-        .order('id', { ascending: false });
+    const { data } = await _supabase.from('pedidos').select('*').order('id', { ascending: false });
     if(data) {
         S.orders = data;
         renderOrders();
@@ -124,7 +164,7 @@ function renderOrders() {
 
 async function aceptarPedido(id) {
     const { error } = await _supabase.from('pedidos')
-        .update({ estado: 'En Camino', repartidor_id: S.user, repartidor_nombre: 'Carlos Mendoza' })
+        .update({ estado: 'En Camino', repartidor_id: S.user, repartidor_nombre: S.profile.nombre })
         .eq('id', id);
     if(error) toast('Error', error.message);
     else {
@@ -135,9 +175,7 @@ async function aceptarPedido(id) {
 }
 
 async function completarEntrega(id) {
-    const { error } = await _supabase.from('pedidos')
-        .update({ estado: 'Entregado' })
-        .eq('id', id);
+    const { error } = await _supabase.from('pedidos').update({ estado: 'Entregado' }).eq('id', id);
     if(error) toast('Error', error.message);
     else {
         toast('Éxito', 'Pedido entregado correctamente');
@@ -146,13 +184,25 @@ async function completarEntrega(id) {
     }
 }
 
-_supabase.channel('cambios-repartidor')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, payload => {
-        cargarPedidos();
-        if(payload.new && payload.new.estado === 'Listo') {
-            toast('Nuevo Pedido', '¡Hay un pedido listo para recoger!');
-        }
-    }).subscribe();
+async function actualizarFoto() {
+    const url = document.getElementById('new-foto').value;
+    if(!url) return alert('Ingresa una URL');
+    const { error } = await _supabase.from('repartidores').update({ foto_perfil: url }).eq('id', S.user);
+    if(error) toast('Error', error.message);
+    else {
+        toast('Éxito', 'Foto actualizada. Pendiente de moderación.');
+        document.getElementById('p-foto').src = url;
+        document.getElementById('r-foto').src = url;
+    }
+}
+
+_supabase.channel('cambios-repartidor').on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => cargarPedidos()).subscribe();
+_supabase.channel('cambios-perfil').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'repartidores' }, payload => {
+    if(payload.new.id === S.user && !payload.new.activo) {
+        alert('Tu cuenta ha sido desactivada por el administrador.');
+        location.reload();
+    }
+}).subscribe();
 </script>
 </body>
 </html>
